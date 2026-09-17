@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "468375298439",
+    "project_id": "igate-cf582",
+    "storage_bucket": "igate-cf582.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:468375298439:android:728c225ac55e4c968b3322",
+        "android_client_info": {
+          "package_name": "com.example.igate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBpGaDVfTmjenLpFDtVS9-oQKTbefQQ2_4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
