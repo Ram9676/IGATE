@@ -40,8 +40,12 @@ class DoubtsViewModel(
 
     fun postDoubt(subject: String, title: String, detail: String, studentName: String = "Rachel Green") {
         viewModelScope.launch {
-            repository.postDoubt(subject, title, detail, studentName)
-            AnalyticsTracker.logDoubtPosted(subject)
+            try {
+                repository.postDoubt(subject, title, detail, studentName)
+                AnalyticsTracker.logDoubtPosted(subject)
+            } catch (e: Exception) {
+                // Safe catch
+            }
         }
     }
 }

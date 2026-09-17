@@ -1,4 +1,4 @@
-﻿package com.example.igate.presentation.teacher
+package com.example.igate.presentation.teacher
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -92,7 +92,7 @@ fun TeacherStudentsScreen(onBackClick: () -> Unit = {}) {
                         val b = batches[idx]
                         val isSel = b == selectedBatch
                         Surface(
-                            modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { selectedBatch = b },
+                            onClick = { selectedBatch = b },
                             color = if (isSel) BrandBlue else MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(20.dp)
                         ) {

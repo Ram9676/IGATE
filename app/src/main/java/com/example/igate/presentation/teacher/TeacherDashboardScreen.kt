@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.igate.IgateApplication
+import com.example.igate.domain.model.VideoTimestamp
 import com.example.igate.domain.model.Batch
 import com.example.igate.domain.model.Doubt
 import com.example.igate.domain.model.GateBranch
@@ -80,9 +81,9 @@ fun TeacherDashboardScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+                .padding(innerPadding),
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             // 1. KPI Stats Cards
             item {
@@ -220,8 +221,16 @@ fun TeacherDashboardScreen(
         if (showUploadLectureDialog) {
             UploadLectureDialog(
                 onDismiss = { showUploadLectureDialog = false },
-                onUpload = { title, subjectId, duration, url ->
-                    viewModel.uploadLecture(title, subjectId, duration, url)
+                onUpload = { title: String, subjectId: String, topicName: String, duration: String, url: String, pdfTitle: String, timestamps: List<VideoTimestamp> ->
+                    viewModel.uploadLecture(
+                        title = title,
+                        subjectId = subjectId,
+                        duration = duration,
+                        videoUrl = url,
+                        topicName = topicName,
+                        pdfTitle = pdfTitle,
+                        timestamps = timestamps
+                    )
                     showUploadLectureDialog = false
                 }
             )
@@ -239,12 +248,12 @@ fun TeacherDashboardScreen(
         }
 
         // Answer Doubt Modal
-        if (activeDoubtToAnswer != null) {
+        activeDoubtToAnswer?.let { doubt ->
             AnswerDoubtDialog(
-                doubt = activeDoubtToAnswer!!,
+                doubt = doubt,
                 onDismiss = { activeDoubtToAnswer = null },
                 onSubmitAnswer = { answer ->
-                    viewModel.answerDoubt(activeDoubtToAnswer!!.id, answer)
+                    viewModel.answerDoubt(doubt.id, answer)
                     activeDoubtToAnswer = null
                 }
             )
@@ -402,50 +411,226 @@ private fun AnswerDoubtDialog(doubt: Doubt, onDismiss: () -> Unit, onSubmitAnswe
 }
 
 @Composable
-private fun UploadLectureDialog(onDismiss: () -> Unit, onUpload: (String, String, String, String) -> Unit) {
+private fun UploadLectureDialog(
+    onDismiss: () -> Unit,
+    onUpload: (title: String, subjectId: String, topicName: String, duration: String, url: String, pdfTitle: String, timestamps: List<VideoTimestamp>) -> Unit
+) {
     var title by remember { mutableStateOf("") }
     var subjectId by remember { mutableStateOf("s2") }
+    var topicName by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf("45 mins") }
-    var videoUrl by remember { mutableStateOf("https://example.com/lecture.mp4") }
+    var videoUrl by remember { mutableStateOf("") }
+    var pdfTitle by remember { mutableStateOf("") }
+
+    var timestampList by remember {
+        mutableStateOf<List<VideoTimestamp>>(
+            listOf(
+                VideoTimestamp(0, "00:00", "Introduction & Topic Scope", "Prerequisites and exam marking scheme"),
+                VideoTimestamp(360, "06:00", "Core Algorithm / Theorem Proof", "In-depth derivation and pseudocode"),
+                VideoTimestamp(1200, "20:00", "GATE PYQ Problem Walkthrough", "Solving standard previous year 2-mark question")
+            )
+        )
+    }
+
+    var newTime by remember { mutableStateOf("") }
+    var newTopic by remember { mutableStateOf("") }
+    var newNote by remember { mutableStateOf("") }
 
     androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(20.dp),
             color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 8.dp
+            tonalElevation = 8.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.85f)
         ) {
             Column(
-                modifier = Modifier.padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp)
             ) {
-                Text(text = "Publish Video Lecture", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(text = "Publish Video Lecture & Timers", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(text = "YouTube URL & Video Chapter Timestamps for Students", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
-                        value = title,
-                        onValueChange = { title = it },
-                        label = { Text("Lecture Title (e.g. DP)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        singleLine = true
-                    )
-                    OutlinedTextField(
-                        value = subjectId,
-                        onValueChange = { subjectId = it },
-                        label = { Text("Subject ID (s1: Math)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        singleLine = true
-                    )
-                    OutlinedTextField(
-                        value = duration,
-                        onValueChange = { duration = it },
-                        label = { Text("Duration") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        singleLine = true
-                    )
+                Spacer(modifier = Modifier.height(10.dp))
+
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    item {
+                        OutlinedTextField(
+                            value = title,
+                            onValueChange = { title = it },
+                            label = { Text("Lecture Title (e.g. Dijkstra Shortest Paths)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp),
+                            singleLine = true
+                        )
+                    }
+                    item {
+                        OutlinedTextField(
+                            value = topicName,
+                            onValueChange = { topicName = it },
+                            label = { Text("Chapter / Subtopic (e.g. Graph Algorithms)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp),
+                            singleLine = true
+                        )
+                    }
+                    item {
+                        OutlinedTextField(
+                            value = videoUrl,
+                            onValueChange = { videoUrl = it },
+                            label = { Text("Video Link (YouTube URL or MP4 Link)") },
+                            placeholder = { Text("https://www.youtube.com/watch?v=... or .mp4") },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp),
+                            singleLine = true
+                        )
+                    }
+                    item {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(
+                                value = duration,
+                                onValueChange = { duration = it },
+                                label = { Text("Duration") },
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(10.dp),
+                                singleLine = true
+                            )
+                            OutlinedTextField(
+                                value = pdfTitle,
+                                onValueChange = { pdfTitle = it },
+                                label = { Text("Attached PDF Title") },
+                                placeholder = { Text("Lecture_Notes.pdf") },
+                                modifier = Modifier.weight(1.5f),
+                                shape = RoundedCornerShape(10.dp),
+                                singleLine = true
+                            )
+                        }
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "Video Chapters / Timers",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "Add timestamps indicating when each topic is explained",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    items(timestampList) { ts ->
+                        Surface(
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Surface(
+                                    color = BrandBlue,
+                                    shape = RoundedCornerShape(4.dp)
+                                ) {
+                                    Text(
+                                        text = ts.timeDisplay,
+                                        color = Color.White,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(text = ts.title, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    if (ts.notes.isNotBlank()) {
+                                        Text(text = ts.notes, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                }
+                                IconButton(
+                                    onClick = { timestampList = timestampList.filter { it != ts } },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(Icons.Filled.Close, null, modifier = Modifier.size(14.dp))
+                                }
+                            }
+                        }
+                    }
+
+                    item {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(10.dp))
+                                .padding(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                OutlinedTextField(
+                                    value = newTime,
+                                    onValueChange = { newTime = it },
+                                    label = { Text("Time (e.g. 12:45)") },
+                                    modifier = Modifier.weight(1f),
+                                    singleLine = true
+                                )
+                                OutlinedTextField(
+                                    value = newTopic,
+                                    onValueChange = { newTopic = it },
+                                    label = { Text("Topic Title") },
+                                    modifier = Modifier.weight(2f),
+                                    singleLine = true
+                                )
+                            }
+                            OutlinedTextField(
+                                value = newNote,
+                                onValueChange = { newNote = it },
+                                label = { Text("Timestamp Notes & Explanations") },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true
+                            )
+                            Button(
+                                onClick = {
+                                    if (newTime.isNotBlank() && newTopic.isNotBlank()) {
+                                        val parts = newTime.split(":")
+                                        val secs = if (parts.size == 2) {
+                                            (parts[0].toIntOrNull() ?: 0) * 60 + (parts[1].toIntOrNull() ?: 0)
+                                        } else 0
+                                        timestampList = timestampList + VideoTimestamp(
+                                            timeSeconds = secs,
+                                            timeDisplay = newTime,
+                                            title = newTopic,
+                                            notes = newNote
+                                        )
+                                        newTime = ""
+                                        newTopic = ""
+                                        newNote = ""
+                                    }
+                                },
+                                modifier = Modifier.align(Alignment.End),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                            ) {
+                                Icon(Icons.Filled.Add, null, modifier = Modifier.size(14.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Add Chapter Mark", fontSize = 11.sp)
+                            }
+                        }
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -455,10 +640,22 @@ private fun UploadLectureDialog(onDismiss: () -> Unit, onUpload: (String, String
                     TextButton(onClick = onDismiss) { Text("Cancel") }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
-                        onClick = { if (title.isNotBlank()) onUpload(title, subjectId, duration, videoUrl) },
+                        onClick = {
+                            if (title.isNotBlank()) {
+                                onUpload(
+                                    title,
+                                    subjectId,
+                                    topicName,
+                                    duration,
+                                    videoUrl,
+                                    pdfTitle,
+                                    timestampList
+                                )
+                            }
+                        },
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Publish to Students")
+                        Text("Publish Lecture")
                     }
                 }
             }

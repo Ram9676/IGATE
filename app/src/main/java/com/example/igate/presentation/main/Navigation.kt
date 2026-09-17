@@ -22,17 +22,29 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     object Institutions : Screen("institutions", "Institutions", Icons.Filled.Business)
 
     object PdfViewer : Screen("pdf_viewer/{assetName}/{title}", "PDF Viewer", Icons.AutoMirrored.Filled.LibraryBooks) {
-        fun createRoute(assetName: String, title: String) = "pdf_viewer/${assetName}/${title}"
+        fun createRoute(assetName: String, title: String): String {
+            val encAsset = java.net.URLEncoder.encode(assetName, java.nio.charset.StandardCharsets.UTF_8.toString())
+            val encTitle = java.net.URLEncoder.encode(title, java.nio.charset.StandardCharsets.UTF_8.toString())
+            return "pdf_viewer/$encAsset/$encTitle"
+        }
     }
 
     object LessonDetail : Screen("lesson_detail/{lessonId}/{lessonTitle}", "Lesson Detail", Icons.Filled.PlayLesson) {
-        fun createRoute(lessonId: String, lessonTitle: String) = "lesson_detail/${lessonId}/${java.net.URLEncoder.encode(lessonTitle, java.nio.charset.StandardCharsets.UTF_8.toString())}"
+        fun createRoute(lessonId: String, lessonTitle: String): String {
+            val encId = java.net.URLEncoder.encode(lessonId, java.nio.charset.StandardCharsets.UTF_8.toString())
+            val encTitle = java.net.URLEncoder.encode(lessonTitle, java.nio.charset.StandardCharsets.UTF_8.toString())
+            return "lesson_detail/$encId/$encTitle"
+        }
     }
 
     object Announcements : Screen("announcements", "Announcements", Icons.Filled.Notifications)
     object Chat : Screen("chat_list", "Chat", Icons.Filled.Forum)
     object ChatRoom : Screen("chat_room/{roomId}/{roomName}", "Chat Room", Icons.Filled.Forum) {
-        fun createRoute(roomId: String, roomName: String) = "chat_room/${roomId}/${java.net.URLEncoder.encode(roomName, java.nio.charset.StandardCharsets.UTF_8.toString())}"
+        fun createRoute(roomId: String, roomName: String): String {
+            val encRoomId = java.net.URLEncoder.encode(roomId, java.nio.charset.StandardCharsets.UTF_8.toString())
+            val encRoomName = java.net.URLEncoder.encode(roomName, java.nio.charset.StandardCharsets.UTF_8.toString())
+            return "chat_room/$encRoomId/$encRoomName"
+        }
     }
     object Analytics : Screen("analytics", "Analytics", Icons.Filled.Insights)
 

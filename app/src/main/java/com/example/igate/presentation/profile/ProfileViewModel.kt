@@ -26,14 +26,22 @@ class ProfileViewModel(
 
     fun switchRole(role: UserRole) {
         viewModelScope.launch {
-            repository?.switchRole(role)
+            try {
+                repository?.switchRole(role)
+            } catch (e: Exception) {
+                // Safe catch
+            }
         }
     }
 
     fun updateBranch(branch: GateBranch) {
         viewModelScope.launch {
-            val current = userProfile.value
-            repository?.updateUserProfile(current.copy(branch = branch))
+            try {
+                val current = userProfile.value
+                repository?.updateUserProfile(current.copy(branch = branch))
+            } catch (e: Exception) {
+                // Safe catch
+            }
         }
     }
 

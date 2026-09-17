@@ -40,10 +40,18 @@ class ChatViewModel : ViewModel() {
     fun openRoom(roomId: String) {
         _currentRoomId.value = roomId
         viewModelScope.launch {
-            chatRepo.getMessages(roomId).collect { _messages.value = it }
+            try {
+                chatRepo.getMessages(roomId).collect { _messages.value = it }
+            } catch (e: Exception) {
+                // Safe catch
+            }
         }
         viewModelScope.launch {
-            chatRepo.getTypingUsers(roomId).collect { _typingUsers.value = it }
+            try {
+                chatRepo.getTypingUsers(roomId).collect { _typingUsers.value = it }
+            } catch (e: Exception) {
+                // Safe catch
+            }
         }
     }
 

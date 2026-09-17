@@ -48,33 +48,41 @@ class AdminViewModel(
 
     fun uploadLesson(title: String, subjectId: String, duration: String) {
         viewModelScope.launch {
-            val newLesson = Lesson(
-                id = UUID.randomUUID().toString(),
-                subjectId = subjectId,
-                title = title,
-                description = "Master Curriculum",
-                videoUrl = "https://example.com/video.mp4",
-                durationString = duration,
-                educatorName = "Prof. Arvind Rao (IIT Bombay)"
-            )
-            repository.insertLesson(newLesson)
-            _statusMessage.value = "Curriculum lesson '$title' published!"
+            try {
+                val newLesson = Lesson(
+                    id = java.util.UUID.randomUUID().toString(),
+                    subjectId = subjectId,
+                    title = title,
+                    description = "Master Curriculum",
+                    videoUrl = "https://example.com/video.mp4",
+                    durationString = duration,
+                    educatorName = "Prof. Arvind Rao (IIT Bombay)"
+                )
+                repository.insertLesson(newLesson)
+                _statusMessage.value = "Curriculum lesson '$title' published!"
+            } catch (e: Exception) {
+                _statusMessage.value = "Error publishing lesson: ${e.message}"
+            }
         }
     }
 
     fun uploadNote(title: String, type: NoteType, subjectId: String) {
         viewModelScope.launch {
-            val newNote = Note(
-                id = UUID.randomUUID().toString(),
-                subjectId = subjectId,
-                title = title,
-                description = "Official Institute Course Material",
-                type = type,
-                fileUrlOrContent = "mock_pdf_path.pdf",
-                isDownloaded = false
-            )
-            repository.insertNote(newNote)
-            _statusMessage.value = "Document '$title' added to central library!"
+            try {
+                val newNote = Note(
+                    id = java.util.UUID.randomUUID().toString(),
+                    subjectId = subjectId,
+                    title = title,
+                    description = "Official Institute Course Material",
+                    type = type,
+                    fileUrlOrContent = "mock_pdf_path.pdf",
+                    isDownloaded = false
+                )
+                repository.insertNote(newNote)
+                _statusMessage.value = "Document '$title' added to central library!"
+            } catch (e: Exception) {
+                _statusMessage.value = "Error adding document: ${e.message}"
+            }
         }
     }
 

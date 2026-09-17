@@ -16,26 +16,42 @@ class IgateApplication : Application() {
         super.onCreate()
         container = DefaultAppContainer(this)
 
-        // Initialize Firebase Analytics
-        AnalyticsTracker.init(this)
+        // Initialize Firebase Analytics safely
+        try {
+            AnalyticsTracker.init(this)
+        } catch (e: Exception) {
+            android.util.Log.w("IgateApplication", "Analytics init failed: ${e.message}")
+        }
 
-        // Create notification channels
-        NotificationHelper.createNotificationChannels(this)
+        // Create notification channels safely
+        try {
+            NotificationHelper.createNotificationChannels(this)
+        } catch (e: Exception) {
+            android.util.Log.w("IgateApplication", "Notification channel creation failed: ${e.message}")
+        }
 
-        // Seed mock data for demonstration
+        // Seed mock data safely in background
         CoroutineScope(Dispatchers.IO).launch {
-            container.igateRepository.seedMockDataIfEmpty()
+            try {
+                container.igateRepository.seedMockDataIfEmpty()
+            } catch (e: Throwable) {
+                android.util.Log.w("IgateApplication", "Mock data seeding skipped: ${e.message}")
+            }
         }
         
-        // Initialize Background Sync Engine
-        val syncRequest = androidx.work.PeriodicWorkRequestBuilder<com.example.igate.domain.worker.SyncWorker>(
-            15, java.util.concurrent.TimeUnit.MINUTES
-        ).build()
-        
-        androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "IgateBackgroundSync",
-            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
-            syncRequest
-        )
+        // Initialize Background Sync Engine safely
+        try {
+            val syncRequest = androidx.work.PeriodicWorkRequestBuilder<com.example.igate.domain.worker.SyncWorker>(
+                15, java.util.concurrent.TimeUnit.MINUTES
+            ).build()
+            
+            androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "IgateBackgroundSync",
+                androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+                syncRequest
+            )
+        } catch (e: Exception) {
+            android.util.Log.w("IgateApplication", "WorkManager background sync init skipped: ${e.message}")
+        }
     }
 }

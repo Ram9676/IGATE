@@ -1,4 +1,4 @@
-﻿package com.example.igate.presentation.quiz
+package com.example.igate.presentation.quiz
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -54,13 +54,15 @@ fun QuizScreen(
 
     var showPaletteSheet by remember { mutableStateOf(false) }
 
-    if (isSubmitted && testResult != null) {
-        GateScorecardScreen(
-            result = testResult!!,
-            questions = questions,
-            onBackClick = onBackClick
-        )
-        return
+    if (isSubmitted) {
+        testResult?.let { result ->
+            GateScorecardScreen(
+                result = result,
+                questions = questions,
+                onBackClick = onBackClick
+            )
+            return
+        }
     }
 
     val currentQ = viewModel.currentQuestion
@@ -421,10 +423,8 @@ private fun OptionCard(
     onClick: () -> Unit
 ) {
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .clickable { onClick() },
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
         color = if (isSelected) BrandBlue.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(14.dp),
         border = androidx.compose.foundation.BorderStroke(

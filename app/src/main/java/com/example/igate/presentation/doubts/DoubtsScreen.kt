@@ -1,4 +1,4 @@
-﻿package com.example.igate.presentation.doubts
+package com.example.igate.presentation.doubts
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -81,9 +81,7 @@ fun DoubtsScreen(
                 items(filterChips) { filter ->
                     val isSelected = selectedFilter == filter
                     Surface(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
-                            .clickable { viewModel.setFilter(filter) },
+                        onClick = { viewModel.setFilter(filter) },
                         color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                         shape = RoundedCornerShape(20.dp)
                     ) {

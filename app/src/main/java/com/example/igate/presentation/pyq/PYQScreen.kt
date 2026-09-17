@@ -1,4 +1,4 @@
-﻿package com.example.igate.presentation.pyq
+package com.example.igate.presentation.pyq
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -81,7 +81,7 @@ fun PYQScreen(
                         val branch = GateBranch.values()[index]
                         val isSelected = branch == selectedBranch
                         Surface(
-                            modifier = Modifier.clip(RoundedCornerShape(20.dp)).clickable { selectedBranch = branch },
+                            onClick = { selectedBranch = branch },
                             color = if (isSelected) BrandBlue else MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(20.dp)
                         ) {
@@ -110,7 +110,8 @@ fun PYQScreen(
                 val paper = papers[index]
                 val isExpanded = selectedYear == paper.year
                 Surface(
-                    modifier = Modifier.fillMaxWidth().animateContentSize().clickable { selectedYear = if (isExpanded) null else paper.year },
+                    onClick = { selectedYear = if (isExpanded) null else paper.year },
+                    modifier = Modifier.fillMaxWidth().animateContentSize(),
                     shape = RoundedCornerShape(16.dp),
                     color = MaterialTheme.colorScheme.surface,
                     border = androidx.compose.foundation.BorderStroke(if (isExpanded) 1.5.dp else 1.dp, if (isExpanded) BrandBlue else MaterialTheme.colorScheme.outline)

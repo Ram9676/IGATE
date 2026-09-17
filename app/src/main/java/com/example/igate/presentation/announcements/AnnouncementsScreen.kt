@@ -53,7 +53,7 @@ fun AnnouncementsScreen(onBackClick: () -> Unit) {
                         return@addSnapshotListener
                     }
                     val list = snapshot?.documents?.mapNotNull { doc ->
-                        doc.toObject(FirestoreAnnouncement::class.java)?.copy(id = doc.id)
+                        runCatching { doc.toObject(FirestoreAnnouncement::class.java)?.copy(id = doc.id) }.getOrNull()
                     } ?: emptyList()
                     trySend(list)
                 }

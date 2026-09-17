@@ -65,7 +65,11 @@ class HomeViewModel(
 
     init {
         viewModelScope.launch {
-            repository.seedMockDataIfEmpty()
+            try {
+                repository.seedMockDataIfEmpty()
+            } catch (e: Exception) {
+                // Ignore seed errors so app doesn't crash on startup
+            }
         }
     }
 
@@ -75,8 +79,12 @@ class HomeViewModel(
 
     fun switchBranch(branch: GateBranch) {
         viewModelScope.launch {
-            val current = userProfile.value
-            repository.updateUserProfile(current.copy(branch = branch))
+            try {
+                val current = userProfile.value
+                repository.updateUserProfile(current.copy(branch = branch))
+            } catch (e: Exception) {
+                // Handle offline or error gracefully
+            }
         }
     }
 }

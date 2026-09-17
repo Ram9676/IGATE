@@ -126,14 +126,16 @@ private fun WelcomeView(
     fun launchGoogleSignIn() {
         coroutineScope.launch {
             try {
-                // We use a fallback if the resource isn't generated yet (e.g., Firebase not enabled)
+                // Obtain web client ID from generated resources, with fallback to project web client ID
                 val webClientId = try {
-                    context.getString(context.resources.getIdentifier("default_web_client_id", "string", context.packageName))
-                } catch (e: Exception) { "" }
-
-                if (webClientId.isBlank()) {
-                    android.widget.Toast.makeText(context, "Google Sign-In not fully configured in Firebase yet.", android.widget.Toast.LENGTH_LONG).show()
-                    return@launch
+                    val resId = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
+                    if (resId != 0) {
+                        context.getString(resId)
+                    } else {
+                        "468375298439-8u93gurm57il6bt62bpll4pcmcf0i63d.apps.googleusercontent.com"
+                    }
+                } catch (e: Exception) {
+                    "468375298439-8u93gurm57il6bt62bpll4pcmcf0i63d.apps.googleusercontent.com"
                 }
 
                 val googleIdOption = com.google.android.libraries.identity.googleid.GetGoogleIdOption.Builder()
@@ -772,8 +774,9 @@ private fun PhoneEntryView(
 
         Button(
             onClick = {
-                if (phone.isNotBlank()) {
-                    onPhoneSubmit(phone, context as android.app.Activity)
+                val activity = context.findActivity()
+                if (phone.isNotBlank() && activity != null) {
+                    onPhoneSubmit(phone, activity)
                 }
             },
             modifier = Modifier
@@ -891,10 +894,8 @@ private fun RoleTab(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier
-            .height(44.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .clickable { onClick() },
+        onClick = onClick,
+        modifier = modifier.height(44.dp),
         color = if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent,
         shape = RoundedCornerShape(24.dp),
         shadowElevation = if (isSelected) 2.dp else 0.dp
@@ -931,10 +932,8 @@ private fun BranchChip(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier
-            .height(38.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .clickable { onClick() },
+        onClick = onClick,
+        modifier = modifier.height(38.dp),
         color = if (isSelected) BrandBlue else MaterialTheme.colorScheme.surfaceVariant,
         shape = RoundedCornerShape(10.dp)
     ) {
@@ -949,4 +948,14 @@ private fun BranchChip(
     }
 }
 
+private fun android.content.Context.findActivity(): android.app.Activity? {
+    var currentContext = this
+    while (currentContext is android.content.ContextWrapper) {
+        if (currentContext is android.app.Activity) {
+            return currentContext
+        }
+        currentContext = currentContext.baseContext
+    }
+    return null
+}
 

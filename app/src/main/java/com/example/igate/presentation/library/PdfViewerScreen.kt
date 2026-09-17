@@ -119,16 +119,16 @@ fun PdfPage(pdfRenderer: PdfRenderer?, pageIndex: Int) {
         }
     }
 
-    if (bitmap != null) {
+    bitmap?.let { b ->
         Image(
-            bitmap = bitmap!!.asImageBitmap(),
+            bitmap = b.asImageBitmap(),
             contentDescription = "Page ${pageIndex + 1}",
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight(),
             contentScale = ContentScale.FillWidth
         )
-    } else {
+    } ?: run {
         Box(
             modifier = Modifier
                 .fillMaxWidth()

@@ -97,7 +97,8 @@ fun TeacherTestCreatorScreen(onBackClick: () -> Unit = {}, onPublish: () -> Unit
                     testTypes.take(2).forEach { type ->
                         val isSel = type == selectedType
                         Surface(
-                            modifier = Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).clickable { selectedType = type },
+                            onClick = { selectedType = type },
+                            modifier = Modifier.weight(1f),
                             color = if (isSel) BrandBlue else MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(10.dp)
                         ) { Box(Modifier.fillMaxWidth().padding(10.dp), Alignment.Center) { Text(type, fontSize = 12.sp, fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal, color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurface) } }
@@ -108,7 +109,8 @@ fun TeacherTestCreatorScreen(onBackClick: () -> Unit = {}, onPublish: () -> Unit
                     testTypes.drop(2).forEach { type ->
                         val isSel = type == selectedType
                         Surface(
-                            modifier = Modifier.weight(1f).clip(RoundedCornerShape(10.dp)).clickable { selectedType = type },
+                            onClick = { selectedType = type },
+                            modifier = Modifier.weight(1f),
                             color = if (isSel) BrandBlue else MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(10.dp)
                         ) { Box(Modifier.fillMaxWidth().padding(10.dp), Alignment.Center) { Text(type, fontSize = 12.sp, fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal, color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurface) } }
@@ -125,7 +127,7 @@ fun TeacherTestCreatorScreen(onBackClick: () -> Unit = {}, onPublish: () -> Unit
                         val subj = subjects[idx]
                         val isSel = subj == selectedSubject
                         Surface(
-                            modifier = Modifier.clip(RoundedCornerShape(10.dp)).clickable { selectedSubject = subj },
+                            onClick = { selectedSubject = subj },
                             color = if (isSel) BrandBlue else MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(10.dp)
                         ) {
@@ -167,9 +169,10 @@ fun TeacherTestCreatorScreen(onBackClick: () -> Unit = {}, onPublish: () -> Unit
                 val (id, text, type) = mockQuestions[idx]
                 val isSelected = selectedQuestions.contains(id)
                 Surface(
-                    modifier = Modifier.fillMaxWidth().animateContentSize().clickable {
+                    onClick = {
                         if (isSelected) selectedQuestions.remove(id) else selectedQuestions.add(id)
                     },
+                    modifier = Modifier.fillMaxWidth().animateContentSize(),
                     shape = RoundedCornerShape(12.dp),
                     color = if (isSelected) BrandBlue.copy(alpha = 0.06f) else MaterialTheme.colorScheme.surface,
                     border = androidx.compose.foundation.BorderStroke(if (isSelected) 1.5.dp else 1.dp, if (isSelected) BrandBlue.copy(alpha = 0.4f) else MaterialTheme.colorScheme.outline)

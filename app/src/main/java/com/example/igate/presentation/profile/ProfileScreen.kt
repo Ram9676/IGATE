@@ -1,4 +1,4 @@
-﻿package com.example.igate.presentation.profile
+package com.example.igate.presentation.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -239,11 +239,10 @@ fun ProfileScreen(
                     GateBranch.values().forEach { branch ->
                         val isSelected = userProfile.branch == branch
                         Surface(
+                            onClick = { viewModel.updateBranch(branch) },
                             modifier = Modifier
                                 .weight(1f)
-                                .height(38.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .clickable { viewModel.updateBranch(branch) },
+                                .height(38.dp),
                             color = if (isSelected) BrandBlue else MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(10.dp)
                         ) {
@@ -327,10 +326,9 @@ fun ProfileScreen(
 @Composable
 private fun ProfileRolePill(label: String, isSelected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
+        onClick = onClick,
         modifier = modifier
-            .height(40.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .clickable { onClick() },
+            .height(40.dp),
         color = if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent,
         shape = RoundedCornerShape(20.dp),
         shadowElevation = if (isSelected) 2.dp else 0.dp
@@ -349,10 +347,9 @@ private fun ProfileRolePill(label: String, isSelected: Boolean, onClick: () -> U
 @Composable
 private fun PortalRowCard(title: String, subtitle: String, icon: ImageVector, tint: Color, onClick: () -> Unit) {
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .clickable { onClick() },
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
         color = MaterialTheme.colorScheme.surface,
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {

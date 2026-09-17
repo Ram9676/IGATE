@@ -44,15 +44,19 @@ class InstitutionsViewModel : ViewModel() {
 
     private fun filterInstitutions(query: String) {
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.Default) {
-            if (query.isBlank()) {
-                _filteredInstitutions.value = allInstitutions
-            } else {
-                val lowerQuery = query.lowercase().trim()
-                _filteredInstitutions.value = allInstitutions.filter { inst ->
-                    com.example.igate.domain.util.Algorithms.fuzzyMatch(lowerQuery, inst.name) ||
-                    com.example.igate.domain.util.Algorithms.fuzzyMatch(lowerQuery, inst.location) ||
-                    inst.tags.any { tag -> com.example.igate.domain.util.Algorithms.fuzzyMatch(lowerQuery, tag) }
+            try {
+                if (query.isBlank()) {
+                    _filteredInstitutions.value = allInstitutions
+                } else {
+                    val lowerQuery = query.lowercase().trim()
+                    _filteredInstitutions.value = allInstitutions.filter { inst ->
+                        com.example.igate.domain.util.Algorithms.fuzzyMatch(lowerQuery, inst.name) ||
+                        com.example.igate.domain.util.Algorithms.fuzzyMatch(lowerQuery, inst.location) ||
+                        inst.tags.any { tag -> com.example.igate.domain.util.Algorithms.fuzzyMatch(lowerQuery, tag) }
+                    }
                 }
+            } catch (e: Exception) {
+                // Safe catch
             }
         }
     }

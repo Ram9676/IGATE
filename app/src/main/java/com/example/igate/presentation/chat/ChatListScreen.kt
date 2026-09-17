@@ -103,10 +103,8 @@ private fun ChatRoomItem(room: ChatRoom, onClick: () -> Unit) {
     val iconTint = if (isGroup) BrandBlue else MaterialTheme.colorScheme.primary
 
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .clickable { onClick() },
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(16.dp),
         tonalElevation = 1.dp

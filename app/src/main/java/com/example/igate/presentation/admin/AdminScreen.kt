@@ -1,4 +1,4 @@
-﻿package com.example.igate.presentation.admin
+package com.example.igate.presentation.admin
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -78,9 +78,9 @@ fun AdminScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+                .padding(innerPadding),
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             // 1. Institute Metrics
             item {
@@ -221,12 +221,12 @@ fun AdminScreen(
         }
 
         // Change Role Dialog
-        if (selectedUserForRoleChange != null) {
+        selectedUserForRoleChange?.let { user ->
             ChangeRoleDialog(
-                user = selectedUserForRoleChange!!,
+                user = user,
                 onDismiss = { selectedUserForRoleChange = null },
                 onSelectRole = { newRole ->
-                    viewModel.changeUserRole(selectedUserForRoleChange!!.id, newRole)
+                    viewModel.changeUserRole(user.id, newRole)
                     selectedUserForRoleChange = null
                 }
             )
@@ -296,10 +296,9 @@ private fun UserRosterCard(user: UserRosterItem, onChangeRole: () -> Unit) {
                 Text(text = user.enrollmentStatus, style = MaterialTheme.typography.bodySmall, fontSize = 11.sp, color = BrandBlue)
             }
             Surface(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable { onChangeRole() },
-                color = MaterialTheme.colorScheme.surfaceVariant
+                onClick = onChangeRole,
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = RoundedCornerShape(8.dp)
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -330,10 +329,9 @@ private fun ChangeRoleDialog(user: UserRosterItem, onDismiss: () -> Unit, onSele
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     UserRole.values().forEach { role ->
                         Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .clickable { onSelectRole(role) },
+                            onClick = { onSelectRole(role) },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp),
                             color = if (user.role == role) BrandBlue.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surfaceVariant
                         ) {
                             Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {

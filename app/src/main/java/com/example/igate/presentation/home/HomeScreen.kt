@@ -75,16 +75,18 @@ fun HomeScreen(
     var selectedFilterIndex by remember { mutableStateOf(0) }
     val filterTabs = listOf("All", "Core Subjects", "Engineering Math", "Full Mocks", "PYQs")
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentPadding = PaddingValues(
+            start = 20.dp,
+            end = 20.dp,
+            top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 12.dp,
+            bottom = 20.dp
+        ),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
             // 1. Header (Matching Image 2: "Hi Rachel, Welcome back!" + branch tag + notification bell)
             item {
                 Row(
@@ -274,12 +276,7 @@ fun HomeScreen(
                 DPPCard(onQuizClick = { onQuizClick("dpp1") })
             }
 
-            // 9. Study Streak Card (Academic — no XP)
-            item {
-                StudyStreakCard()
-            }
-
-            // 10. Doubt Resolution Card (Physics Wallah / Unacademy style)
+            // 9. Doubt Resolution Card (Physics Wallah / Unacademy style)
             item {
                 DoubtBannerCard(onDoubtsClick = onDoubtsClick)
             }
@@ -299,9 +296,7 @@ fun HomeScreen(
                     items(filterTabs.size) { index ->
                         val isSelected = selectedFilterIndex == index
                         Surface(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(20.dp))
-                                .clickable { selectedFilterIndex = index },
+                            onClick = { selectedFilterIndex = index },
                             color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(20.dp)
                         ) {
@@ -354,7 +349,6 @@ fun HomeScreen(
             }
         }
     }
-}
 
 @Composable
 fun ResumeLessonCard(
@@ -362,10 +356,9 @@ fun ResumeLessonCard(
     onResumeClick: () -> Unit
 ) {
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(22.dp))
-            .clickable { onResumeClick() },
+        onClick = onResumeClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
         color = MaterialTheme.colorScheme.surfaceVariant,
         tonalElevation = 2.dp,
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
@@ -602,10 +595,9 @@ fun GateMockBanner(
     onStartTest: () -> Unit
 ) {
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .clickable { onStartTest() },
+        onClick = onStartTest,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surface,
         border = androidx.compose.foundation.BorderStroke(1.dp, BrandBlue.copy(alpha = 0.4f))
     ) {
@@ -680,10 +672,9 @@ fun FolderCourseCard(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier
-            .height(160.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .clickable { onClick() },
+        onClick = onClick,
+        modifier = modifier.height(160.dp),
+        shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceVariant,
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
@@ -701,32 +692,29 @@ fun FolderCourseCard(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.surface),
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(BrandBlue.copy(alpha = 0.12f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Folder,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(20.dp)
+                        tint = BrandBlue,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
 
-                // Top right arrow circle matching Image 2
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surface),
-                    contentAlignment = Alignment.Center
+                Surface(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.NorthEast,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(14.dp)
+                    Text(
+                        text = "${subject.completedLessons}/${subject.totalLessons}",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
             }
@@ -742,7 +730,7 @@ fun FolderCourseCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${subject.completedLessons}/${subject.totalLessons} Lessons",
+                    text = "${subject.branch.code} • ${subject.completedLessons}/${subject.totalLessons} Lessons",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -754,15 +742,18 @@ fun FolderCourseCard(
 // Live Class Banner — Unacademy style (pulsing red dot)
 @Composable
 fun LiveClassBanner(onJoinClick: () -> Unit) {
-    val infiniteTransition = rememberInfiniteTransition(label = "live")
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.4f, targetValue = 1f,
+        initialValue = 1f,
+        targetValue = 0.3f,
         animationSpec = infiniteRepeatable(animation = tween(700), repeatMode = RepeatMode.Reverse),
         label = "pulse"
     )
 
     Surface(
-        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).clickable { onJoinClick() },
+        onClick = onJoinClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surface,
         border = androidx.compose.foundation.BorderStroke(1.5.dp, Color(0xFFE53935).copy(alpha = 0.4f))
     ) {
@@ -809,7 +800,7 @@ fun PYQShortcutRow(onPYQClick: () -> Unit) {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             items((2024 downTo 2019).toList()) { year ->
                 Surface(
-                    modifier = Modifier.clip(RoundedCornerShape(14.dp)).clickable { onPYQClick() },
+                    onClick = onPYQClick,
                     color = MaterialTheme.colorScheme.surface,
                     border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     shape = RoundedCornerShape(14.dp)
@@ -832,7 +823,9 @@ fun PYQShortcutRow(onPYQClick: () -> Unit) {
 @Composable
 fun DPPCard(onQuizClick: () -> Unit) {
     Surface(
-        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).clickable { onQuizClick() },
+        onClick = onQuizClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surface,
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
@@ -860,43 +853,14 @@ fun DPPCard(onQuizClick: () -> Unit) {
     }
 }
 
-// Study Streak Card — Academic (no XP/gamification)
-@Composable
-fun StudyStreakCard() {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-    ) {
-        Row(
-            Modifier.padding(18.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                Modifier.size(52.dp).clip(RoundedCornerShape(16.dp)).background(Color(0xFFFFF8E1)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("🔥", fontSize = 24.sp)
-            }
-            Spacer(Modifier.width(16.dp))
-            Column(Modifier.weight(1f)) {
-                Text("14-Day Study Streak", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                Text("Studied every day for 2 weeks. Keep it up!", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            Column(horizontalAlignment = Alignment.End) {
-                Text("Longest", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("21 days", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = BrandBlue)
-            }
-        }
-    }
-}
 
 // Doubt Resolution Card — Connects to Doubts tab
 @Composable
 fun DoubtBannerCard(onDoubtsClick: () -> Unit) {
     Surface(
-        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).clickable { onDoubtsClick() },
+        onClick = onDoubtsClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surface,
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {

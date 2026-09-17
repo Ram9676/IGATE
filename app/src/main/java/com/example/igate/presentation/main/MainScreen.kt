@@ -83,20 +83,26 @@ fun MainScreen() {
     Scaffold(
         bottomBar = {
             if (shouldShowBottomBar) {
-                FloatingPillBottomBar(
+                AppBottomBar(
                     navController = navController,
                     items = navItems,
                     currentRoute = currentRoute
                 )
             }
         },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Home.route,
-            modifier = Modifier.padding(innerPadding)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = innerPadding.calculateBottomPadding())
         ) {
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Home.route,
+                modifier = Modifier.fillMaxSize()
+            ) {
             // Student Home
             composable(Screen.Home.route) {
                 HomeScreen(
@@ -129,6 +135,9 @@ fun MainScreen() {
                 LessonsScreen(
                     onLessonClick = { lessonId, title ->
                         navController.navigate(Screen.LessonDetail.createRoute(lessonId, title))
+                    },
+                    onPdfClick = { assetName, title ->
+                        navController.navigate(Screen.PdfViewer.createRoute(assetName, title))
                     }
                 )
             }
@@ -159,7 +168,11 @@ fun MainScreen() {
             // Teacher Dashboard (PW Drona / Educator)
             composable(Screen.Teacher.route) {
                 TeacherDashboardScreen(
-                    onBackClick = { navController.popBackStack() },
+                    onBackClick = {
+                        if (!navController.popBackStack()) {
+                            navController.navigate(Screen.Profile.route)
+                        }
+                    },
                     onStudentsClick = { navController.navigate(Screen.TeacherStudents.route) },
                     onCreateTestClick = { navController.navigate(Screen.TeacherTestCreator.route) }
                 )
@@ -168,7 +181,11 @@ fun MainScreen() {
             // Admin Portal (Teachmint / Classplus)
             composable(Screen.Admin.route) {
                 AdminScreen(
-                    onBackClick = { navController.popBackStack() },
+                    onBackClick = {
+                        if (!navController.popBackStack()) {
+                            navController.navigate(Screen.Profile.route)
+                        }
+                    },
                     onAnalyticsClick = { navController.navigate(Screen.AdminAnalytics.route) }
                 )
             }
@@ -196,19 +213,26 @@ fun MainScreen() {
 
             // Lesson Detail Video Player
             composable(Screen.LessonDetail.route) { backStackEntry ->
-                val lessonId = backStackEntry.arguments?.getString("lessonId") ?: ""
-                val lessonTitle = backStackEntry.arguments?.getString("lessonTitle") ?: "Lesson"
+                val rawId = backStackEntry.arguments?.getString("lessonId") ?: ""
+                val rawTitle = backStackEntry.arguments?.getString("lessonTitle") ?: "Lesson"
+                val lessonId = try { java.net.URLDecoder.decode(rawId, "UTF-8") } catch (e: Exception) { rawId }
+                val lessonTitle = try { java.net.URLDecoder.decode(rawTitle, "UTF-8") } catch (e: Exception) { rawTitle }
                 LessonDetailScreen(
                     lessonId = lessonId,
                     lessonTitle = lessonTitle,
-                    onBackClick = { navController.popBackStack() }
+                    onBackClick = { navController.popBackStack() },
+                    onPdfClick = { assetName, title ->
+                        navController.navigate(Screen.PdfViewer.createRoute(assetName, title))
+                    }
                 )
             }
 
             // PDF Viewer
             composable(Screen.PdfViewer.route) { backStackEntry ->
-                val assetName = backStackEntry.arguments?.getString("assetName") ?: ""
-                val title = backStackEntry.arguments?.getString("title") ?: "Document"
+                val rawAsset = backStackEntry.arguments?.getString("assetName") ?: ""
+                val rawTitle = backStackEntry.arguments?.getString("title") ?: "Document"
+                val assetName = try { java.net.URLDecoder.decode(rawAsset, "UTF-8") } catch (e: Exception) { rawAsset }
+                val title = try { java.net.URLDecoder.decode(rawTitle, "UTF-8") } catch (e: Exception) { rawTitle }
                 PdfViewerScreen(
                     assetFileName = assetName,
                     title = title,
@@ -233,11 +257,13 @@ fun MainScreen() {
 
             // Chat Room
             composable(Screen.ChatRoom.route) { backStackEntry ->
-                val roomId = backStackEntry.arguments?.getString("roomId") ?: ""
-                val roomName = backStackEntry.arguments?.getString("roomName") ?: "Chat"
+                val rawId = backStackEntry.arguments?.getString("roomId") ?: ""
+                val rawName = backStackEntry.arguments?.getString("roomName") ?: "Chat"
+                val roomId = try { java.net.URLDecoder.decode(rawId, "UTF-8") } catch (e: Exception) { rawId }
+                val roomName = try { java.net.URLDecoder.decode(rawName, "UTF-8") } catch (e: Exception) { rawName }
                 ChatScreen(
                     roomId = roomId,
-                    roomName = java.net.URLDecoder.decode(roomName, java.nio.charset.StandardCharsets.UTF_8.toString()),
+                    roomName = roomName,
                     onBackClick = { navController.popBackStack() }
                 )
             }
@@ -272,72 +298,66 @@ fun MainScreen() {
         }
     }
 }
+}
 
-// Floating Pill Bottom Dock matching Image 2
+// Crisp, solid, high-contrast Material 3 Docked Bottom Bar
 @Composable
-fun FloatingPillBottomBar(
+fun AppBottomBar(
     navController: NavHostController,
     items: List<Screen>,
     currentRoute: String?
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 12.dp),
-        contentAlignment = Alignment.Center
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 4.dp,
+        shadowElevation = 8.dp,
+        border = androidx.compose.foundation.BorderStroke(
+            0.5.dp,
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        )
     ) {
-        Box(
-            modifier = Modifier
-                .height(64.dp)
-                .iosGlassmorphism(
-                    blurRadius = 24f,
-                    surfaceColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                    shape = RoundedCornerShape(32.dp)
-                )
-                .border(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(32.dp))
+        NavigationBar(
+            containerColor = MaterialTheme.colorScheme.surface,
+            tonalElevation = 0.dp,
+            windowInsets = NavigationBarDefaults.windowInsets,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Row(
-                modifier = Modifier
-                    .padding(horizontal = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                items.forEach { screen ->
-                    val isSelected = currentRoute == screen.route
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                imageVector = screen.icon,
-                                contentDescription = screen.title,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        },
-                        label = {
-                            Text(
-                                text = screen.title,
-                                fontSize = 10.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                            )
-                        },
-                        selected = isSelected,
-                        onClick = {
-                            if (currentRoute != screen.route) {
-                                navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primary,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+            items.forEach { screen ->
+                val isSelected = currentRoute == screen.route
+                NavigationBarItem(
+                    icon = {
+                        Icon(
+                            imageVector = screen.icon,
+                            contentDescription = screen.title,
+                            modifier = Modifier.size(24.dp)
                         )
+                    },
+                    label = {
+                        Text(
+                            text = screen.title,
+                            fontSize = 11.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                        )
+                    },
+                    selected = isSelected,
+                    onClick = {
+                        if (currentRoute != screen.route) {
+                            navController.navigate(screen.route) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                }
+                )
             }
         }
     }

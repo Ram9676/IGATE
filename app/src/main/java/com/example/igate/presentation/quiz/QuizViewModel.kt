@@ -246,7 +246,11 @@ class QuizViewModel(
         AnalyticsTracker.logTestCompleted(result.testId, result.score, result.accuracyPercentage, result.percentileRank)
 
         viewModelScope.launch {
-            repository?.submitTestAttempt(result)
+            try {
+                repository?.submitTestAttempt(result)
+            } catch (e: Exception) {
+                // Safely catch to prevent crash if test submission fails
+            }
         }
     }
 

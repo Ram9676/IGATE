@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Public study materials, catalog and doubts can be read by all students
+    match /subjects/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /lessons/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /notes/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /tests/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /questions/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /institutions/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /batches/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Doubts forum
+    match /doubts/{doubtId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Test results
+    match /test_results/{resultId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Chat rooms & messages
+    match /chat_rooms/{roomId}/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Default rule
+    match /{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}
